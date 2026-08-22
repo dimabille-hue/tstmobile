@@ -68,7 +68,8 @@ function unitMarkup(tile) {
   return `<ellipse class="unit-shadow" cx="${x}" cy="${anchorY}" rx="14" ry="5"/><circle class="unit" cx="${x}" cy="${y}" r="14"/><path class="unit-core" d="M ${x} ${y-7} l 6 7 -6 7 -6-7z"/>`;
 }
 let drag, suppressClick=false;
-svg.addEventListener('pointerdown', (event) => { if(event.button!==0)return; drag={x:event.clientX,rotation:state.rotation,moved:false}; svg.setPointerCapture(event.pointerId); svg.classList.add('is-rotating'); });
+svg.addEventListener('contextmenu', (event) => event.preventDefault());
+svg.addEventListener('pointerdown', (event) => { if(event.button!==2)return; event.preventDefault(); drag={x:event.clientX,rotation:state.rotation,moved:false}; svg.setPointerCapture(event.pointerId); svg.classList.add('is-rotating'); });
 svg.addEventListener('pointermove', (event) => { if(!drag)return; const delta=event.clientX-drag.x; drag.moved ||= Math.abs(delta)>3; state.rotation=drag.rotation+delta*.7; draw(); });
 svg.addEventListener('pointerup', (event) => { if(!drag)return; suppressClick=drag.moved; drag=null; svg.classList.remove('is-rotating'); svg.releasePointerCapture(event.pointerId); if(suppressClick)setTimeout(()=>{suppressClick=false;},0); });
 svg.addEventListener('click', (event) => { if(suppressClick){suppressClick=false;return;} const tile=event.target.closest('.tile'); if(!tile)return; state.unit={q:+tile.dataset.q,r:+tile.dataset.r}; draw(); });
