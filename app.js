@@ -5,7 +5,9 @@ const state = { shape: 'hex', columns: 15, rows: 15, projection: 'top', tilt: 30
 // Logical coordinates are deliberately independent from the chosen projection.
 const geometry = {
   square(q, r, size) { return { x: q * size, y: r * size, points: [[0,0],[1,0],[1,1],[0,1]].map(([x,y]) => [x * size, y * size]) }; },
-  hex(q, r, size) { const w = Math.sqrt(3) * size, x = w * (q + r / 2), y = size * 1.5 * r; return { x, y, points: Array.from({length:6},(_,i) => { const a = Math.PI/180*(60*i-30); return [Math.cos(a)*size, Math.sin(a)*size]; }) }; }
+  // Odd-row offset layout: rows 1, 3, 5… align with each other, while rows 2, 4, 6… are shifted by half a cell.
+  // This produces a rectangular map footprint instead of the diagonal axial-grid parallelogram.
+  hex(q, r, size) { const w = Math.sqrt(3) * size, x = w * (q + (r % 2) * .5), y = size * 1.5 * r; return { x, y, points: Array.from({length:6},(_,i) => { const a = Math.PI/180*(60*i-30); return [Math.cos(a)*size, Math.sin(a)*size]; }) }; }
 };
 const project = (x, y, height) => {
   if (state.projection === 'top') return { x, y: y - height };
