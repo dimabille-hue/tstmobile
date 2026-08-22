@@ -37,8 +37,14 @@
           <label>Проекция
             <select id="projection"><option value="top">Вид сверху</option><option value="iso">Изометрия</option></select>
           </label>
+          <label>Наклон изометрии <output id="tilt-output">30°</output>
+            <input id="tilt" type="range" min="15" max="65" value="30" />
+          </label>
           <label>Ландшафт
             <select id="terrain"><option value="plain">Равнина</option><option value="hills">Холмы</option><option value="sphere">Сфера</option></select>
+          </label>
+          <label>Кривизна сферы <output id="curvature-output">65%</output>
+            <input id="curvature" type="range" min="0" max="100" value="65" />
           </label>
           <button id="reset" type="button">Сбросить маркер</button>
           <div class="math-note"><span>⌬</span><p>Координаты поля не зависят от рендера: каждая ячейка хранит логическую пару <code>q, r</code>.</p></div>
