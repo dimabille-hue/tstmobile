@@ -60,6 +60,7 @@
         </aside>
       </section>
     </main>
-    <script type="module" src="app.js"></script>
+    <!-- Обычный deferred-скрипт также запускается при прямом открытии index.html (file://). -->
+    <script src="app.js" defer></script>
   </body>
 </html>

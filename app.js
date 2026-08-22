@@ -18,8 +18,15 @@ function draw() {
   document.querySelector('#grid-summary').textContent=`${state.columns} × ${state.rows} · ${state.columns*state.rows} ячейки`;
   document.querySelector('#position').textContent=`q: ${state.unit.q} · r: ${state.unit.r}`;
   const tiles=[]; const size=state.shape==='hex'?39:53;
-  for(let r=0;r<state.rows;r++) for(let q=0;q<state.columns;q++) { const cell=geometry[state.shape](q,r,size); const h=elevation(q,r); const p=project(cell.x,cell.y,h); const points=cell.points.map(([x,y])=>`${p.x+x},${p.y+y}`).join(' '); tiles.push({q,r,h,p,points}); }
-  const xs=tiles.flatMap(t=>t.points.match(/-?[\d.]+/g).filter((_,i)=>i%2===0).map(Number)), ys=tiles.flatMap(t=>t.points.match(/-?[\d.]+/g).filter((_,i)=>i%2).map(Number));
+  for(let r=0;r<state.rows;r++) for(let q=0;q<state.columns;q++) {
+    const cell=geometry[state.shape](q,r,size), h=elevation(q,r), p=project(cell.x,cell.y,h);
+    // Keep coordinates as numbers while calculating bounds. This avoids parsing SVG strings
+    // and makes rendering stable when trigonometry produces exponential notation.
+    const vertices=cell.points.map(([x,y]) => [p.x+x,p.y+y]);
+    const points=vertices.map(([x,y])=>`${x.toFixed(2)},${y.toFixed(2)}`).join(' ');
+    tiles.push({q,r,h,p,points,vertices});
+  }
+  const xs=tiles.flatMap(t=>t.vertices.map(([x])=>x)), ys=tiles.flatMap(t=>t.vertices.map(([,y])=>y));
   const offsetX=500-(Math.min(...xs)+Math.max(...xs))/2, offsetY=350-(Math.min(...ys)+Math.max(...ys))/2+15;
   svg.innerHTML = `<g transform="translate(${offsetX} ${offsetY})">${tiles.map(t=>`<polygon class="tile" data-q="${t.q}" data-r="${t.r}" points="${t.points}" fill="${color(t.q,t.r,t.h)}" stroke="#5ca6a2" stroke-opacity=".45"/>`).join('')}${state.terrain!=='plain'?tiles.filter(t=>(t.q+t.r)%2===0).map(t=>`<path class="terrain-line" d="M ${t.p.x-12} ${t.p.y} q 12 -8 24 0"/>`).join(''):''}${unitMarkup(tiles.find(t=>t.q===state.unit.q&&t.r===state.unit.r))}</g>`;
 }
