@@ -4,11 +4,16 @@ const state = { shape: 'hex', columns: 9, rows: 7, projection: 'top', terrain: '
 
 // Logical coordinates are deliberately independent from the chosen projection.
 const geometry = {
-  square(q, r, size) { return { x: q * size * 1.03, y: r * size * 1.03, points: [[0,0],[1,0],[1,1],[0,1]].map(([x,y]) => [x * size, y * size]) }; },
+  square(q, r, size) { return { x: q * size, y: r * size, points: [[0,0],[1,0],[1,1],[0,1]].map(([x,y]) => [x * size, y * size]) }; },
   hex(q, r, size) { const w = Math.sqrt(3) * size, x = w * (q + r / 2), y = size * 1.5 * r; return { x, y, points: Array.from({length:6},(_,i) => { const a = Math.PI/180*(60*i-30); return [Math.cos(a)*size, Math.sin(a)*size]; }) }; }
 };
 const project = (x, y, height) => state.projection === 'iso' ? { x: (x - y) * .9, y: (x + y) * .43 - height } : { x, y: y - height };
-const elevation = (q, r) => { if (state.terrain === 'plain') return 0; const cx=(state.columns-1)/2, cy=(state.rows-1)/2, d=Math.hypot(q-cx,r-cy); return state.terrain === 'sphere' ? Math.max(0, 75 - d*d*5) : (Math.sin(q*.9)+Math.cos(r*1.2)+2)*12; };
+const terrainHeightAt = (x, y, width, height) => {
+  if (state.terrain === 'plain') return 0;
+  const nx=x/width-.5, ny=y/height-.5;
+  if (state.terrain === 'sphere') return Math.max(0, 82-(nx*nx+ny*ny)*250);
+  return (Math.sin(nx*Math.PI*3)+Math.cos(ny*Math.PI*3)+2)*11;
+};
 const color = (q,r,h) => { const n=(q*13+r*7)%3; const base = ['#285b63','#2e6870','#397272'][n]; return h ? `hsl(${state.terrain === 'sphere' ? 194 : 169} ${42+h/8}% ${28+h/3}%)` : base; };
 
 function draw() {
@@ -18,11 +23,19 @@ function draw() {
   document.querySelector('#grid-summary').textContent=`${state.columns} × ${state.rows} · ${state.columns*state.rows} ячейки`;
   document.querySelector('#position').textContent=`q: ${state.unit.q} · r: ${state.unit.r}`;
   const tiles=[]; const size=state.shape==='hex'?39:53;
+  const extent=geometry[state.shape](state.columns-1,state.rows-1,size);
+  const boardWidth=extent.x+size, boardHeight=extent.y+size;
   for(let r=0;r<state.rows;r++) for(let q=0;q<state.columns;q++) {
-    const cell=geometry[state.shape](q,r,size), h=elevation(q,r), p=project(cell.x,cell.y,h);
-    // Keep coordinates as numbers while calculating bounds. This avoids parsing SVG strings
-    // and makes rendering stable when trigonometry produces exponential notation.
-    const vertices=cell.points.map(([x,y]) => [p.x+x,p.y+y]);
+    const cell=geometry[state.shape](q,r,size);
+    const h=terrainHeightAt(cell.x,cell.y,boardWidth,boardHeight), p=project(cell.x,cell.y,h);
+    // Project every shared world-space vertex, rather than merely moving a tile's centre.
+    // Neighbouring polygons therefore keep exactly the same edge in top and isometric views.
+    const vertices=cell.points.map(([x,y]) => {
+      const worldX=cell.x+x, worldY=cell.y+y;
+      const vertexH=terrainHeightAt(worldX,worldY,boardWidth,boardHeight);
+      const screen=project(worldX,worldY,vertexH);
+      return [screen.x,screen.y];
+    });
     const points=vertices.map(([x,y])=>`${x.toFixed(2)},${y.toFixed(2)}`).join(' ');
     tiles.push({q,r,h,p,points,vertices});
   }
