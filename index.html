@@ -27,11 +27,11 @@
             <select id="shape"><option value="hex">Гексагон</option><option value="square">Квадрат</option></select>
           </label>
           <div class="two-column">
-            <label>Ширина <output id="columns-output">9</output>
-              <input id="columns" type="range" min="3" max="15" value="9" />
+            <label>Ширина <output id="columns-output">15</output>
+              <input id="columns" type="range" min="3" max="30" value="15" />
             </label>
-            <label>Высота <output id="rows-output">7</output>
-              <input id="rows" type="range" min="3" max="12" value="7" />
+            <label>Высота <output id="rows-output">15</output>
+              <input id="rows" type="range" min="3" max="30" value="15" />
             </label>
           </div>
           <label>Проекция
@@ -51,9 +51,9 @@
         </aside>
 
         <section class="board-panel" aria-label="Игровое поле">
-          <div class="board-toolbar"><span id="grid-summary">9 × 7 · 63 ячейки</span><span class="status"><i></i> ход игрока</span></div>
-          <svg id="board" viewBox="0 0 1000 700" role="img" aria-label="Игровое поле; нажмите на ячейку для перемещения маркера"></svg>
-          <p class="board-hint">Нажмите ЛКМ на любой сегмент поля, чтобы переместить разведчика</p>
+          <div class="board-toolbar"><span id="grid-summary">15 × 15 · 225 ячеек</span><span class="status"><i></i> угол: <b id="rotation-output">0°</b></span></div>
+          <svg id="board" viewBox="0 0 1000 700" role="img" aria-label="Игровое поле; перетаскивайте левой кнопкой мыши для поворота, нажмите на ячейку для перемещения маркера"></svg>
+          <p class="board-hint">Перетаскивайте поле ЛКМ для поворота на 360° · кликните по сегменту, чтобы переместить разведчика</p>
         </section>
 
         <aside class="panel inspector">
