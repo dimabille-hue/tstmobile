@@ -1,6 +1,6 @@
 const svg = document.querySelector('#board');
-const controls = Object.fromEntries(['shape', 'columns', 'rows', 'projection', 'tilt', 'terrain', 'curvature'].map((id) => [id, document.querySelector(`#${id}`)]));
-const state = { shape: 'hex', columns: 15, rows: 15, projection: 'top', tilt: 30, terrain: 'plain', curvature: 65, rotation: 0, unit: { q: 0, r: 0 } };
+const controls = Object.fromEntries(['shape', 'columns', 'rows', 'projection', 'tilt', 'plane-tilt', 'terrain', 'curvature'].map((id) => [id, document.querySelector(`#${id}`)]));
+const state = { shape: 'hex', columns: 15, rows: 15, projection: 'top', tilt: 30, planeTilt: 0, terrain: 'plain', curvature: 65, rotation: 0, unit: { q: 0, r: 0 } };
 
 // Logical coordinates are deliberately independent from the chosen projection.
 const geometry = {
@@ -25,13 +25,18 @@ const rotateWorld = (x, y, bounds) => {
   const dx=x-cx, dy=y-cy, cos=Math.cos(angle), sin=Math.sin(angle);
   return [cx+dx*cos-dy*sin,cy+dx*sin+dy*cos];
 };
+const inclinePlane = (x, y, height) => {
+  const angle=state.planeTilt*Math.PI/180;
+  // Rotate the field around its horizontal world axis; terrain height remains normal to that plane.
+  return [x,y*Math.cos(angle),height+y*Math.sin(angle)];
+};
 const color = (q,r,h) => { const n=(q*13+r*7)%3; const base = ['#285b63','#2e6870','#397272'][n]; return h ? `hsl(${state.terrain === 'sphere' ? 194 : 169} ${42+h/8}% ${28+h/3}%)` : base; };
 
 function draw() {
-  Object.assign(state, { shape: controls.shape.value, columns:+controls.columns.value, rows:+controls.rows.value, projection:controls.projection.value, tilt:+controls.tilt.value, terrain:controls.terrain.value, curvature:+controls.curvature.value });
+  Object.assign(state, { shape: controls.shape.value, columns:+controls.columns.value, rows:+controls.rows.value, projection:controls.projection.value, tilt:+controls.tilt.value, planeTilt:+controls['plane-tilt'].value, terrain:controls.terrain.value, curvature:+controls.curvature.value });
   state.unit.q = Math.min(state.unit.q, state.columns - 1); state.unit.r = Math.min(state.unit.r, state.rows - 1);
   document.querySelector('#columns-output').value=state.columns; document.querySelector('#rows-output').value=state.rows;
-  document.querySelector('#tilt-output').value=`${state.tilt}°`; document.querySelector('#curvature-output').value=`${state.curvature}%`;
+  document.querySelector('#tilt-output').value=`${state.tilt}°`; document.querySelector('#plane-tilt-output').value=`${state.planeTilt}°`; document.querySelector('#curvature-output').value=`${state.curvature}%`;
   document.querySelector('#grid-summary').textContent=`${state.columns} × ${state.rows} · ${state.columns*state.rows} ячейки`;
   document.querySelector('#rotation-output').textContent=`${Math.round((state.rotation+360)%360)}°`;
   document.querySelector('#position').textContent=`q: ${state.unit.q} · r: ${state.unit.r}`;
@@ -43,13 +48,13 @@ function draw() {
     cell.points.forEach(([x,y])=>{bounds.minX=Math.min(bounds.minX,cell.x+x); bounds.maxX=Math.max(bounds.maxX,cell.x+x); bounds.minY=Math.min(bounds.minY,cell.y+y); bounds.maxY=Math.max(bounds.maxY,cell.y+y);});
   }
   for(const {q,r,cell} of cells) {
-    const h=terrainHeightAt(cell.x,cell.y,bounds), [centerX,centerY]=rotateWorld(cell.x,cell.y,bounds), p=project(centerX,centerY,h);
+    const h=terrainHeightAt(cell.x,cell.y,bounds), [centerX,centerY]=rotateWorld(cell.x,cell.y,bounds), p=project(...inclinePlane(centerX,centerY,h));
     // Project every shared world-space vertex, rather than merely moving a tile's centre.
     // Neighbouring polygons therefore keep exactly the same edge in top and isometric views.
     const vertices=cell.points.map(([x,y]) => {
       const worldX=cell.x+x, worldY=cell.y+y;
       const vertexH=terrainHeightAt(worldX,worldY,bounds), [rotatedX,rotatedY]=rotateWorld(worldX,worldY,bounds);
-      const screen=project(rotatedX,rotatedY,vertexH);
+      const screen=project(...inclinePlane(rotatedX,rotatedY,vertexH));
       return [screen.x,screen.y];
     });
     const points=vertices.map(([x,y])=>`${x.toFixed(2)},${y.toFixed(2)}`).join(' ');

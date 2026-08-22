@@ -37,8 +37,11 @@
           <label>Проекция
             <select id="projection"><option value="top">Вид сверху</option><option value="iso">Изометрия</option></select>
           </label>
-          <label>Наклон изометрии <output id="tilt-output">30°</output>
+          <label>Угол обзора изометрии <output id="tilt-output">30°</output>
             <input id="tilt" type="range" min="15" max="65" value="30" />
+          </label>
+          <label>Наклон плоскости <output id="plane-tilt-output">0°</output>
+            <input id="plane-tilt" type="range" min="-35" max="35" value="0" />
           </label>
           <label>Ландшафт
             <select id="terrain"><option value="plain">Равнина</option><option value="hills">Холмы</option><option value="sphere">Сфера</option></select>
