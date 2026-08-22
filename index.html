@@ -1,0 +1,65 @@
+<!doctype html>
+<html lang="ru">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="theme-color" content="#101827" />
+    <title>Tileforge — прототип поля</title>
+    <link rel="stylesheet" href="styles.css" />
+  </head>
+  <body>
+    <main class="app-shell">
+      <header class="app-header">
+        <div>
+          <p class="eyebrow">TURN-BASED GEOMETRY LAB</p>
+          <h1>Tileforge</h1>
+        </div>
+        <p class="header-copy">MVP игрового поля: настройте геометрию и перемещайте маркер по клику.</p>
+      </header>
+
+      <section class="workspace" aria-label="Редактор игрового поля">
+        <aside class="panel controls-panel">
+          <div class="panel-heading">
+            <p class="eyebrow">FIELD SETTINGS</p>
+            <h2>Конфигурация</h2>
+          </div>
+          <label>Фигура
+            <select id="shape"><option value="hex">Гексагон</option><option value="square">Квадрат</option></select>
+          </label>
+          <div class="two-column">
+            <label>Ширина <output id="columns-output">9</output>
+              <input id="columns" type="range" min="3" max="15" value="9" />
+            </label>
+            <label>Высота <output id="rows-output">7</output>
+              <input id="rows" type="range" min="3" max="12" value="7" />
+            </label>
+          </div>
+          <label>Проекция
+            <select id="projection"><option value="top">Вид сверху</option><option value="iso">Изометрия</option></select>
+          </label>
+          <label>Ландшафт
+            <select id="terrain"><option value="plain">Равнина</option><option value="hills">Холмы</option><option value="sphere">Сфера</option></select>
+          </label>
+          <button id="reset" type="button">Сбросить маркер</button>
+          <div class="math-note"><span>⌬</span><p>Координаты поля не зависят от рендера: каждая ячейка хранит логическую пару <code>q, r</code>.</p></div>
+        </aside>
+
+        <section class="board-panel" aria-label="Игровое поле">
+          <div class="board-toolbar"><span id="grid-summary">9 × 7 · 63 ячейки</span><span class="status"><i></i> ход игрока</span></div>
+          <svg id="board" viewBox="0 0 1000 700" role="img" aria-label="Игровое поле; нажмите на ячейку для перемещения маркера"></svg>
+          <p class="board-hint">Нажмите ЛКМ на любой сегмент поля, чтобы переместить разведчика</p>
+        </section>
+
+        <aside class="panel inspector">
+          <div class="panel-heading"><p class="eyebrow">ACTIVE UNIT</p><h2>Разведчик</h2></div>
+          <div class="unit-card"><div class="unit-avatar">◈</div><div><strong>Примитив #01</strong><span id="position">q: 0 · r: 0</span></div></div>
+          <dl><div><dt>Тип</dt><dd>Маркер</dd></div><div><dt>Действие</dt><dd>Перемещение</dd></div><div><dt>Дальность</dt><dd>∞ (MVP)</dd></div></dl>
+          <p class="legend-title">Обозначения</p>
+          <div class="legend"><span class="legend-cell"></span> доступная ячейка</div>
+          <div class="legend"><span class="legend-unit">◈</span> активный объект</div>
+        </aside>
+      </section>
+    </main>
+    <script type="module" src="app.js"></script>
+  </body>
+</html>
